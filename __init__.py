@@ -1,4 +1,4 @@
-"""TruthGate 0.2.0 Hermes plugin registration."""
+"""TruthGate 0.2.1 Hermes plugin registration."""
 
 from __future__ import annotations
 
@@ -37,10 +37,10 @@ def _truthgate(raw_args: str) -> str:
     del raw_args
     try:
         if _gate is None:
-            return "TruthGate 0.2.0: not initialized."
+            return "TruthGate 0.2.1: not initialized."
         return _gate.status()
     except Exception:
-        return "TruthGate 0.2.0: status unavailable (gate remains fail-open)."
+        return "TruthGate 0.2.1: status unavailable (gate remains fail-open)."
 
 
 def register(ctx: Any) -> None:
@@ -48,14 +48,13 @@ def register(ctx: Any) -> None:
 
     global _gate
     try:
-        from agent.runtime_cwd import resolve_agent_cwd
-    except ImportError:
-        resolve_agent_cwd = None
-    try:
-        data_dir = ctx.state.data_dir
+        # ``ctx.session_cwd()`` is the supported plugin API for the calling
+        # session's working directory. It is read lazily inside each hook, only
+        # when a relative path needs it. Without it relative paths fail open.
+        session_cwd = getattr(ctx, "session_cwd", None)
         _gate = TruthGate(
-            FindingStore(data_dir / "findings.jsonl"),
-            cwd_resolver=resolve_agent_cwd,
+            FindingStore(ctx.state.data_dir / "findings.jsonl"),
+            cwd_resolver=session_cwd if callable(session_cwd) else None,
         )
     except Exception:
         logger.exception("TruthGate initialization failed; hooks will remain fail-open")

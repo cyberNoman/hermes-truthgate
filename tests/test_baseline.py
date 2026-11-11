@@ -40,19 +40,16 @@ def test_missing_file_treats_all_later_stubs_as_new(tmp_path):
     assert finding_names(comparison) == [("introduced", "ellipsis")]
 
 
-def test_v4a_patch_captures_multiple_files_and_move_destination(tmp_path):
+def test_v4a_patch_captures_update_add_and_both_sides_of_a_move(tmp_path):
     one = tmp_path / "one.py"
     two = tmp_path / "two.py"
-    destination = tmp_path / "moved.py"
     one.write_text("def one():\n    return 1\n", encoding="utf-8")
     two.write_text("def two():\n    return 2\n", encoding="utf-8")
     store = baseline.BaselineStore()
     patch_text = """*** Begin Patch
 *** Update File: one.py
 @@
-*** Update File: two.py
-*** Move to: moved.py
-@@
+*** Move File: two.py -> moved.py
 *** Add File: added.py
 *** End Patch
 """
@@ -62,7 +59,7 @@ def test_v4a_patch_captures_multiple_files_and_move_destination(tmp_path):
     )
 
     assert [Path(item.path).name for item in snapshots] == ["one.py", "two.py", "moved.py", "added.py"]
-    assert [item.status for item in snapshots] == ["ok", "ok", "missing", "missing"]
+    assert [item.status for item in snapshots] == ["ok", "ok", "ok", "missing"]
 
 
 def test_replace_patch_uses_path_argument(tmp_path):
@@ -96,7 +93,7 @@ def test_unsafe_initial_files_are_indeterminate_and_fail_open(tmp_path):
             store.capture_tool_call("write_file", {"path": str(path)}, turn_id="turn-a", cwd=tmp_path)
         )
 
-    assert [item.status for item in snapshots] == ["binary", "oversized", "inaccessible"]
+    assert [item.status for item in snapshots] == ["binary", "oversized", "not_regular"]
     for path in (binary, oversized, inaccessible):
         result = store.compare("turn-a", path, "def new_stub():\n    pass\n")
         assert result.status == "indeterminate"

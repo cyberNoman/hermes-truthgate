@@ -73,8 +73,8 @@ class FindingStore:
                             counts[_clean(record.get("event") or "unknown", limit=40)] += 1
                             total += 1
             breakdown = ", ".join(f"{key}={counts[key]}" for key in sorted(counts)) or "none"
-            return f"TruthGate 0.2.0: {total} sanitized records ({breakdown})."
+            return f"TruthGate 0.2.1: {total} sanitized records ({breakdown})."
         except FileNotFoundError:
-            return "TruthGate 0.2.0: no findings recorded."
+            return "TruthGate 0.2.1: no findings recorded."
         except Exception:
-            return "TruthGate 0.2.0: findings store unavailable (gate remains fail-open)."
+            return "TruthGate 0.2.1: findings store unavailable (gate remains fail-open)."
