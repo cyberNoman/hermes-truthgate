@@ -1,0 +1,8 @@
+name: truthgate
+version: 0.2.0
+description: Deterministic final-turn stub and embedded-secret verification for Hermes Agent
+license: MIT
+requires_hermes: ">=0.23.0"
+provides_hooks:
+  - pre_tool_call
+  - pre_verify
